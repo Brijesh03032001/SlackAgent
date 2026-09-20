@@ -1,10 +1,10 @@
-# 🚀 SlackMind - Production AI Agent with Memory & 59 Tools
+# 🚀 SlackMind - AI Agent with Memory & 59 Tools
 
-> **An intelligent Slack bot that never forgets, searches 10,000+ messages semantically, and takes automated actions across GitHub, Notion, and Slack. Built with RAG, Long-Term Memory, and MCP Protocol.**
+> **A Slack bot that remembers context, searches indexed Slack history semantically, and takes automated actions across GitHub, Notion, and Slack. Built with RAG, Long-Term Memory, and MCP Protocol.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org/)
-[![Anthropic](https://img.shields.io/badge/Anthropic-Claude-orange)](https://www.anthropic.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai)](https://openai.com/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-Embeddings-412991?logo=openai)](https://openai.com/)
 [![Slack](https://img.shields.io/badge/Slack-Bolt.js-4A154B?logo=slack)](https://slack.dev/bolt-js/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -41,23 +41,23 @@ An AI agent that **remembers everything**, **understands context**, and **takes 
 | Feature | Impact | Technology |
 |---------|--------|------------|
 | 🔍 **Semantic Search** | Find relevant discussions even without exact keywords | RAG + ChromaDB + OpenAI Embeddings (1536-dim) |
-| 🧠 **Long-Term Memory** | Remembers user preferences, projects, and context across all sessions | mem0.ai with GPT-4 Mini extraction |
-| 🔧 **59 Integrated Tools** | Creates GitHub issues, updates Notion, schedules Slack messages—all from chat | MCP Protocol (26 GitHub + 21 Notion + 12 Slack) |
+| 🧠 **Long-Term Memory** | Remembers user preferences, projects, and context across all sessions | mem0.ai with GPT-4o-mini extraction |
+| 🔧 **59 Integrated Tools** | 12 Slack tools I wrote directly, plus 47 more (26 GitHub + 21 Notion) via off-the-shelf MCP servers | MCP Protocol |
 | ⚡ **Real-Time Processing** | Sub-2-second responses with background indexing | Event-driven architecture + Socket Mode |
+
+What's mine here vs. what's off-the-shelf: MCP itself, and the GitHub/Notion MCP servers, are published packages I connect to. What I built is the MCP client that spawns and routes JSON-RPC to those servers, the tool-to-OpenAI-format converter, the 12 Slack tools, the RAG/memory context assembly, and the agent orchestration loop.
 
 ---
 
 ## 📊 Performance Metrics
 
-**Tested in production environment with real workload:**
+**Tested in my own Slack workspace — this is a personal/test deployment, not a customer-facing production system:**
 
 ```
-⚡ Average Response Time:     1.8 seconds
-🎯 Search Relevance Accuracy:  95.3%
-📚 Messages Indexed:           10,000+
+⚡ Average Response Time:     ~1.8s (sum of the latency breakdown below)
+📚 Messages Indexed:           254 (my own test workspace)
 🔄 Index Update Frequency:     Every 60 minutes
 💬 Concurrent Conversations:   100+ (tested)
-🧠 Memory Retention Rate:      98.7%
 🔧 Tool Success Rate:          97.2%
 📦 Total API Integrations:     3 platforms, 59 tools
 ```
@@ -65,7 +65,7 @@ An AI agent that **remembers everything**, **understands context**, and **takes 
 **Latency Breakdown:**
 - Memory retrieval: ~200ms
 - RAG semantic search: ~400ms
-- LLM inference (Claude): ~900ms
+- LLM inference (GPT-4o): ~900ms
 - Tool execution: ~300ms (avg)
 
 ---
@@ -78,7 +78,7 @@ An AI agent that **remembers everything**, **understands context**, and **takes 
 <tr>
 <td width="33%">
 <img src="./assets/screenshots/Rag_workflow.png" alt="RAG Workflow" />
-<p align="center"><b>RAG System</b><br/>Semantic search across 10K+ messages</p>
+<p align="center"><b>RAG System</b><br/>Semantic search across 254 indexed messages</p>
 </td>
 <td width="33%">
 <img src="./assets/screenshots/memory.png" alt="Memory System" />
@@ -96,7 +96,7 @@ An AI agent that **remembers everything**, **understands context**, and **takes 
 ```
 User: @SlackMind What did we discuss about the login timeout issue?
 
-SlackMind: 🔍 Searching 10,000+ messages...
+SlackMind: 🔍 Searching indexed Slack history...
 
 Found 3 relevant discussions:
 • Oct 5: "Login takes 30s to timeout" - @john
@@ -127,11 +127,11 @@ As a software engineer working across distributed teams, I experienced firsthand
 2. **AI assistants forget** - Every interaction starts fresh, no learning from past conversations
 3. **Manual integration is tedious** - Constantly switching between tools breaks deep work
 
-I wanted to build something that showcased **production-grade AI engineering**:
-- ✅ Advanced RAG implementation (not just ChatGPT wrapper)
+I wanted to build something that went deeper than a chat wrapper:
+- ✅ A real RAG implementation (chunking, embeddings, retrieval, re-indexing) instead of a thin prompt wrapper
 - ✅ Real-world integration complexity (3 APIs, 59 tools)
-- ✅ Scalable architecture (handles 100+ concurrent conversations)
-- ✅ Production observability (comprehensive logging, error handling)
+- ✅ An architecture that holds up at 100+ concurrent conversations in testing
+- ✅ Structured logging and layered error handling throughout
 
 This project demonstrates **end-to-end AI system design** - from vector databases to LLM orchestration to deployment.
 
@@ -145,10 +145,12 @@ This project demonstrates **end-to-end AI system design** - from vector database
 - **TSX** - Fast TypeScript execution for dev workflow
 
 ### **AI & Machine Learning**
-- **Anthropic Claude (Sonnet)** - Primary LLM for reasoning and tool orchestration
-- **OpenAI GPT-4** - Fallback LLM and embeddings model
-- **OpenAI text-embedding-3-small** - 1536-dimensional vector embeddings
+- **OpenAI GPT-4o** - The only LLM in the request path: reasoning, tool-call decisions, and thread summarization all go through it
+- **OpenAI text-embedding-3-small** - 1536-dimensional vector embeddings for RAG
+- **OpenAI GPT-4o-mini** - Fact extraction for the mem0 long-term memory layer
 - **mem0.ai** - Long-term memory with automatic fact extraction
+
+> Note: the config schema also accepts an Anthropic API key (`ANTHROPIC_API_KEY`), and Anthropic's MCP protocol powers the GitHub/Notion tool integrations below — but no code path in this repo currently calls the Anthropic API. Every LLM call in `src/agents/agent.ts` goes through the OpenAI client.
 
 ### **Vector Database & Storage**
 - **ChromaDB** - Local vector store for semantic search
@@ -870,8 +872,8 @@ TOOL CALL:
 ### Step 1: Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/slack-ai-assistant-v2.git
-cd slack-ai-assistant-v2
+git clone https://github.com/Brijesh03032001/SlackAgent.git
+cd SlackAgent
 npm install
 ```
 
@@ -1227,16 +1229,18 @@ slack-ai-assistant-v2/
 
 ---
 
-## � Cost Analysis
+## 💰 Cost Analysis
 
-**Monthly operational costs for a team of 50 users with moderate usage:**
+**These are modeled estimates from published per-token pricing and an assumed usage volume — not observed spend from a live deployment. My own test workspace runs at a much smaller scale (254 messages indexed).**
+
+**Modeled monthly cost for a hypothetical team of 50 users with moderate usage:**
 
 ### API Cost Breakdown
 
 | Service | Usage | Cost per Unit | Monthly Cost |
 |---------|-------|---------------|--------------|
-| **OpenAI Embeddings** | 10K messages indexed + 1K queries | $0.00002/1K tokens | ~$5.00 |
-| **Anthropic Claude** | ~5K LLM calls (100/day) | $3/$15 per 1M tokens | ~$25.00 |
+| **OpenAI Embeddings** | 10K messages indexed + 1K queries (modeled) | $0.00002/1K tokens | ~$5.00 |
+| **OpenAI GPT-4o** | ~5K LLM calls (100/day, modeled) | per OpenAI's published rates (check platform.openai.com/pricing — rates change) | ~$15-30 (estimate) |
 | **mem0.ai** | 50 users, 2K memories | Free tier / $29 pro | $0-$29 |
 | **Slack** | Standard plan | $8/user | N/A (existing) |
 | **GitHub/Notion APIs** | Free tier | $0 | $0 |
@@ -1265,7 +1269,7 @@ const rateLimiter = new RateLimiter({
 });
 
 // 4. Fallback to cached results
-if (claudeError) {
+if (llmError) {
   return getCachedResponse(query);
 }
 ```
@@ -1424,16 +1428,16 @@ async function callLLM(messages: Message[]) {
   }
   
   try {
-    return await anthropic.messages.create({
-      model: 'claude-sonnet-3-5',
+    return await openaiClient.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 4096,
       messages
     });
   } catch (error) {
     if (error.message.includes('context_length_exceeded')) {
       // Last resort: Keep only system prompt + last message
-      return await anthropic.messages.create({
-        model: 'claude-sonnet-3-5',
+      return await openaiClient.chat.completions.create({
+        model: 'gpt-4o',
         messages: [messages[0], messages[messages.length - 1]]
       });
     }
@@ -1475,7 +1479,7 @@ metrics.gauge('memory.active_users', activeUsers);
 |---------|-----------|--------|-------------------|-----|-----------------|
 | **Semantic Search** | ✅ RAG with embeddings | ❌ | ❌ | ❌ | ❌ |
 | **Long-Term Memory** | ✅ Persistent context | ❌ | ❌ | ❌ | ❌ |
-| **Natural Language** | ✅ Claude/GPT-4 | ⚠️ Limited | ⚠️ Limited | ⚠️ With plugins | ⚠️ Basic |
+| **Natural Language** | ✅ GPT-4o | ⚠️ Limited | ⚠️ Limited | ⚠️ With plugins | ⚠️ Basic |
 | **Custom Logic** | ✅ Full code control | ❌ Visual only | ❌ Visual only | ⚠️ Limited | ✅ |
 | **Cost (50 users)** | $45-75/mo | $200+/mo | $150+/mo | $50-100/mo | Variable |
 | **Learning Curve** | High (dev skills) | Low | Low | Medium | High |
@@ -1611,12 +1615,7 @@ SlackMind at 10K tasks: $50-75
 
 ### 📊 Feature Voting
 
-Want to influence the roadmap? [Vote on features here](#) or open a GitHub Discussion!
-
-**Most requested features:**
-1. Multi-modal support (23 votes)
-2. Analytics dashboard (18 votes)
-3. Voice interface (15 votes)
+Want to influence the roadmap? Open a GitHub Discussion with your suggestion.
 
 ---
 
@@ -1626,22 +1625,22 @@ Want to influence the roadmap? [Vote on features here](#) or open a GitHub Discu
   
 ### **Brijesh Kumar**
 
-Software Engineer | AI/ML Enthusiast | Open Source Contributor
+AI Software Engineer | MS Computer Science @ Arizona State University
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://linkedin.com/in/brijeshkumar)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/brijeshkumar)
-[![Email](https://img.shields.io/badge/Email-Contact-red?logo=gmail)](mailto:brijesh@example.com)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-orange?logo=google-chrome)](https://brijeshkumar.dev)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://linkedin.com/in/brijeshkumar03)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-black?logo=github)](https://github.com/Brijesh03032001)
+[![Email](https://img.shields.io/badge/Email-Contact-red?logo=gmail)](mailto:kumarbrijesh.dev@outlook.com)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-orange?logo=google-chrome)](https://brijeshbuilds.com)
 
 </div>
 
 ### About Me
 
-I'm a software engineer passionate about building **production-grade AI systems** that solve real-world problems. This project represents 300+ hours of research, development, and iteration to create a truly intelligent assistant.
+I'm an MS Computer Science student building AI systems that solve real-world problems, with prior full-time experience as a Software Developer at Quicket Solutions and a Software Engineer at AWL Metaverse Pvt. Ltd. This project is a personal deep-dive into RAG, long-term memory, and multi-tool agent orchestration, run against my own Slack workspace.
 
 **Background:**
-- 🎓 Computer Science graduate with focus on Machine Learning
-- 💼 3+ years experience building scalable backend systems
+- 🎓 MS Computer Science @ Arizona State University (4.0 GPA), graduating December 2026
+- 💼 Prior full-time experience: Software Developer @ Quicket Solutions, Software Engineer @ AWL Metaverse Pvt. Ltd.
 - 🤖 Deep interest in RAG, LLM orchestration, and agentic AI
 - 🛠️ Strong advocate for clean architecture and maintainable code
 
@@ -1681,17 +1680,17 @@ I built SlackMind to showcase my abilities in:
 
 ### Open to Opportunities
 
-🚀 **Seeking:** Software Engineer, AI/ML Engineer, or Backend Engineer roles
+🚀 **Seeking:** Full-time Applied AI / Software Engineering roles, starting after my December 2026 graduation
 
-**Ideal role:** Building production AI systems, working with LLMs, scaling infrastructure, or developing developer tools.
+**Ideal role:** Working with LLMs and agent systems, retrieval/evaluation infrastructure, or backend platforms that ship to real users.
 
-**Location:** Remote preferred | Willing to relocate for the right opportunity
+**Location:** Tempe/Phoenix, AZ — open to relocation
 
 **Contact:**
-- 📧 Email: brijesh.kumar@example.com
-- 💼 LinkedIn: [linkedin.com/in/brijeshkumar](https://linkedin.com/in/brijeshkumar)
-- 🐙 GitHub: [github.com/brijeshkumar](https://github.com/brijeshkumar)
-- 🌐 Portfolio: [brijeshkumar.dev](https://brijeshkumar.dev)
+- 📧 Email: [kumarbrijesh.dev@outlook.com](mailto:kumarbrijesh.dev@outlook.com)
+- 💼 LinkedIn: [linkedin.com/in/brijeshkumar03](https://linkedin.com/in/brijeshkumar03)
+- 🐙 GitHub: [github.com/Brijesh03032001](https://github.com/Brijesh03032001)
+- 🌐 Portfolio: [brijeshbuilds.com](https://brijeshbuilds.com)
 
 ---
 
@@ -1699,17 +1698,14 @@ I built SlackMind to showcase my abilities in:
 
 ```
 📅 Project Duration:        6 months (Sept 2025 - Feb 2026)
-⏱️ Development Hours:       300+ hours
 📝 Lines of Code:           5,000+ (TypeScript)
 🔧 API Integrations:        3 platforms, 59 tools
-📊 Test Coverage:           Planned for v2.1
-⭐ GitHub Stars:            [Star this repo!]
-🍴 Forks:                   Open source & ready to use
+🧪 Automated Tests:         None yet — manual testing only
 ```
 
 ---
 
-## �🐛 Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
