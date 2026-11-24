@@ -2,13 +2,13 @@
 
 > A Slack-native agent that remembers you, searches indexed workspace history semantically, and takes real actions across GitHub, Notion and Slack through **59 MCP tools**.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green?logo=node.js)](https://nodejs.org/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai)](https://openai.com/)
-[![Slack](https://img.shields.io/badge/Slack-Bolt.js-4A154B?logo=slack)](https://slack.dev/bolt-js/)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-vectors-5B5BD6)](https://trychroma.com)
-[![mem0](https://img.shields.io/badge/mem0-long--term%20memory-FF6F00)](https://mem0.ai)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Node.js](https://img.shields.io/badge/Node.js-2E7D32?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![OpenAI GPT-4o](https://img.shields.io/badge/OpenAI_GPT--4o-412991?style=for-the-badge)](https://openai.com)
+[![MCP](https://img.shields.io/badge/MCP-1F2937?style=for-the-badge)](https://modelcontextprotocol.io)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-4B2E83?style=for-the-badge)](https://trychroma.com)
+[![mem0](https://img.shields.io/badge/mem0-B45309?style=for-the-badge)](https://mem0.ai)
+[![MongoDB](https://img.shields.io/badge/MongoDB-2E7D4F?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
 
 ---
 
