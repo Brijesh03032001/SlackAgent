@@ -12,6 +12,17 @@
 
 ---
 
+## The hard part
+
+Three apps, three schema dialects, one agent. Slack, GitHub and Notion describe their tools in
+incompatible ways, and an agent that can only speak one of them is not much use in a thread where the
+decision, the issue and the doc each live somewhere else.
+
+The second hard part is what happens when one of those dependencies dies mid-conversation. An agent
+that goes silent on a 403 is worse than no agent at all.
+
+---
+
 ## Highlights
 
 - Combined **12 custom Slack tools** with **47 GitHub and Notion tools** exposed through an **MCP** client, converting external schemas so a Slack-native agent could act across **3 apps** from one shared chat, with **97.2% tool success** in tests of **100+ concurrent conversations**.
@@ -22,6 +33,20 @@
 - Enforced a **150,000-token** context threshold and a **4,096-token** response cap while preserving the last **10 messages** of session history, keeping LLM cost and latency predictable on long threads.
 - Added a **MongoDB-backed job store** for queued tool executions and re-indexing tasks, so in-flight work survives a process restart instead of living only in memory.
 - Modeled unit economics for a **50-user** team at **$45–$75 per month** (**$0.90–$1.50 per user**), showing the agent supports moderate usage below common task-metered automation pricing.
+
+---
+
+## Agent design
+
+| Layer | How it works here |
+|---|---|
+| **Orchestration** | One GPT-4o agent over a unified tool surface, rather than a router across three app-specific bots |
+| **Tool interfaces** | An **MCP** client converts external schemas into one dialect — 12 Slack tools written here plus 47 from GitHub and Notion MCP servers |
+| **Retrieval** | ChromaDB over 10,000+ indexed messages with 1536-d embeddings, re-indexed every 60 minutes. The similarity floor drops from 0.30 to 0.15 when results come back sparse |
+| **Memory** | mem0 with GPT-4o-mini fact extraction, kept separate from conversation history — users can view, add or delete what it remembers |
+| **Evaluation** | 97.2% tool success across 100+ concurrent test conversations, 95.3% search relevance, 1.8 s average response |
+| **Budget control** | A 150,000-token context threshold and a 4,096-token response cap, preserving the last 10 messages of session history |
+| **When it breaks** | 3 fallback layers — full RAG with memory, then LLM-only, then a cached template. A GitHub 403 at the 5,000 requests-per-hour ceiling queues the issue in a MongoDB job store instead of failing, and that queue survives a restart |
 
 ---
 
@@ -131,6 +156,19 @@ npm run dev
 ```bash
 docker compose up -d     # agent + ChromaDB + MongoDB
 ```
+
+---
+
+## 🧩 Part of a series on agents that take actions
+
+|  |  |
+|---|---|
+| [**SlackAgent**](https://github.com/Brijesh03032001/SlackAgent) | 59 tools across 3 apps through one MCP client  ←  **you are here** |
+| [**Aria**](https://github.com/Brijesh03032001/Aria) | 5 agents behind a LangGraph supervisor, gated on spoken confirmation |
+| [**FoodPilot AI**](https://github.com/Brijesh03032001/foodai) | A ReAct copilot plus a validator the LLM cannot talk past |
+| [**TrustMed-AI**](https://github.com/Brijesh03032001/TrustmedAi) | Retrieval you can audit, with an evaluation suite behind it |
+
+How I build these, end to end → **[github.com/Brijesh03032001](https://github.com/Brijesh03032001)**
 
 ---
 
